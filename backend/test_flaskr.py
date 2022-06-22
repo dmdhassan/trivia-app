@@ -9,7 +9,7 @@ from models import setup_db, Question, Category
 
 class TriviaTestCase(unittest.TestCase):
     """This class represents the trivia test case"""
-
+ 
     def setUp(self):
         """Define test variables and initialize app."""
         self.app = create_app()
