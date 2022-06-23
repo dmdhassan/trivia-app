@@ -1,11 +1,10 @@
 import os
 from tracemalloc import start
+from unicodedata import category
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from models import setup_db, Question
 import random
-
 from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
@@ -18,6 +17,8 @@ def paginate_questions(request, selection):
     questions = [question.format() for question in selection]
     current_questions = questions[start:end]
 
+    return current_questions
+
 def create_app(test_config=None):
     # creation and configuration of the app
     app = Flask(__name__)
@@ -29,15 +30,17 @@ def create_app(test_config=None):
     def after_request(response):
         response.headers.add(
             "Access-Control-Allow-Headers", "Content-Type, Authorization, true"
-        )
+            )
 
         response.headers.add(
             "Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS"
-        )
+            )
+
+        response.headers.add(
+            "Access-Control-Allow-Origin", "*"
+            )
 
         return response
-
-
 
     """
     @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
@@ -53,7 +56,7 @@ def create_app(test_config=None):
     for all available categories.
     """
 
-
+    
     """
     @TODO:
     Create an endpoint to handle GET requests for questions,
@@ -66,6 +69,49 @@ def create_app(test_config=None):
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions.
     """
+
+    @app.route('/questions', methods=['GET'])
+    def get_questions():
+        selection = Question.query.order_by(Question.id).all()
+        current_questions = paginate_questions(request, selection)
+
+        categories = {}
+
+        for category in Category.query.order_by(Category.type).all():
+            id = category.id
+            categories[id] = category.type
+            
+        if len(current_questions) == 0:
+            abort(404)
+
+        return jsonify({
+            'success': True,
+            'questions': current_questions,
+            'total_questions': len(selection),
+            'categories': categories
+        })
+
+    @app.route('/categories/<int:category_id>/questions')
+    def get_questions_by_id(category_id):
+        selection = Question.query.order_by(Question.id).filter(Question.category == category_id).all()
+        current_questions = paginate_questions(request, selection)
+
+        categories = {}
+
+        for category in Category.query.order_by(Category.type).all():
+            id = category.id
+            categories[id] = category.type
+        
+        if len(current_questions) == 0:
+            abort(404)
+
+        return jsonify({
+            'success': True,
+            'questions': current_questions,
+            'total_questions': len(Question.query.all()),
+            'categories': categories,
+            'current_category': category_id
+        })
 
     """
     @TODO:
@@ -123,6 +169,14 @@ def create_app(test_config=None):
     Create error handlers for all expected errors
     including 404 and 422.
     """
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            'success': False,
+            'error': 404,
+            'message': 'resource not found'
+        }), 404
 
     return app
 
