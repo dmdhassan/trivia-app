@@ -25,7 +25,15 @@ class TriviaTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
-    
+
+        self.new_question = {
+            'question': 'why are you testing the flask app',
+            'answer': 'for the best',
+            'category': 4,
+            'difficulty': 4
+        }
+
+
     def tearDown(self):
         """Executed after reach test"""
         pass
@@ -70,6 +78,62 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'resource not found')
+
+    def test_post_new_question(self):
+        res = self.client().post('/questions', json=self.new_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        self.assertTrue(len(data['questions']))
+        self.assertTrue(data['total_questions'])
+
+    # def test_405_if_question_post_not_allowed(self):
+    #     res = self.client().post('/question/45', json=self.new_question)
+    #     data = json.loads(res.data)
+
+    #     self.assertEqual(res.status_code, 405)
+    #     self.assertEqual(data['success'], False)
+    #     self.assertEqual(data['message'], 'method not allowed')
+
+    def test_get_question_with_results(self):
+        res = self.client().post("/questions", json={"search": "title"})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(data["total_questions"])
+        self.assertTrue(len(data["questions"]))
+
+    def test_get_question_without_results(self):
+        res = self.client().post("/questions", json={"search": "bobrisky"})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(data["total_questions"], 0)
+        self.assertEqual(len(data["questions"]), 0)
+
+    def test_delete_question(self):
+        res = self.client().delete('questions/3')
+        data = json.loads(res.data)
+        question = Question.query.filter(Question.id == 3).one_or_none()
+
+        self.assertEqual(question, None)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(data['deleted'], 3)
+        self.assertTrue(data['total_books'])
+        self.assertTrue(len(data['questions']))
+
+    def test_404_question_does_not_exist(self):
+        res = self.client().delete('questions/2000000')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource unprocessable')
 
 
 # Make the tests conveniently executable

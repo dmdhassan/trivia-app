@@ -121,6 +121,28 @@ def create_app(test_config=None):
     This removal will persist in the database and when you refresh the page.
     """
 
+    @app.route('/questions/<int:question_id>', methods=['DELETE'])
+    def delete_question(question_id):
+        try:
+            question = Question.query.filter(Question.id == question_id).one_or_none()
+
+            if question is None:
+                abort(404)
+
+
+            question.delete()
+            selection = Question.query.order_by(Question.id).all()
+            current_questions = paginate_questions(request, selection)
+
+            return jsonify({
+            'success': True,
+            'deleted': question_id,
+            'questions': current_questions,
+            'total_question': len(selection)
+            })
+        except:
+            abort(422)
+
     """
     @TODO:
     Create an endpoint to POST a new question,
@@ -142,6 +164,50 @@ def create_app(test_config=None):
     only question that include that string within their question.
     Try using the word "title" to start.
     """
+
+    @app.route('/questions', methods=['POST'])
+    def post_question():
+        body = request.get_json()
+        question = body.get('question', None)
+        answer = body.get('answer', None)
+        category = body.get('category', None)
+        difficulty = body.get('difficulty', None)
+        search = body.get('search', None)
+        
+        try:
+            if search:
+                selection = Question.query.order_by(Question.id).filter(Question.question.ilike('%{}%'.format(search)))
+                current_questions = paginate_questions(request, selection)
+
+                return jsonify({
+                    'success': True,
+                    'questions': current_questions,
+                    'total_questions': len(selection.all())
+                })
+
+            else:
+                new_question = Question(
+                    question=question,
+                    answer=answer,
+                    category=category,
+                    difficulty=difficulty
+                )
+
+                new_question.insert()
+
+                selection = Question.query.order_by(Question.id).all()
+                current_questions = paginate_questions(request, selection)
+
+                return jsonify({
+                'success': True,
+                'created': new_question.id,
+                'questions': current_questions,
+                'total_question': len(selection)
+                })
+
+        except:
+            abort(422)
+
 
     """
     @TODO:
@@ -171,12 +237,28 @@ def create_app(test_config=None):
     """
 
     @app.errorhandler(404)
-    def not_found(error):
+    def resource_not_found(error):
         return jsonify({
             'success': False,
             'error': 404,
             'message': 'resource not found'
         }), 404
+
+    @app.errorhandler(422)
+    def not_processable(error):
+        return jsonify({
+            'success': False,
+            'error': 422,
+            'message': 'resource unprocessable'
+        }), 422
+
+    @app.errorhandler(405)
+    def not_allowed(error):
+        return jsonify({
+            'success': False,
+            'error': 405,
+            'message': 'method not allowed'
+        }), 405
 
     return app
 
