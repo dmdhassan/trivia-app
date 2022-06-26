@@ -177,7 +177,7 @@ Request Body:
 
 Returns: a single new question object
 
--Sample `curl http://127.0.0.1:5000/quizzex -X POST -H "Content-Type: application/json" -d {"category":"2", "previous_question":"[2, 5, 7]", "rating":"5"}'`
+-Sample `curl http://127.0.0.1:5000/quizzes -X POST -H "Content-Type: application/json" -d {"category":"2", "previous_question":"[2, 5, 7]", "rating":"5"}'`
 
 ```
 {
