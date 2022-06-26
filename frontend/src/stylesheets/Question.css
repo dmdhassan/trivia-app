@@ -8,6 +8,10 @@
   flex-shrink: 2;
 }
 
+.categories-list li:hover {
+  cursor: pointer;
+}
+
 .categories-list > form {
   width: 60%;
 }

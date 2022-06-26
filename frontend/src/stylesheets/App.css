@@ -13,6 +13,10 @@
   color: dodgerblue;
 }
 
+.App-header > * {
+  cursor: pointer;
+}
+
 .App-intro {
   font-size: large;
 }
@@ -36,4 +40,8 @@ form {
   flex-direction: column;
   width: 80%;
   margin: auto;
+}
+
+.button {
+  cursor: pointer;
 }
