@@ -15,13 +15,6 @@ Developers using this project should already have Python3, pip, node and npm ins
 
 #### Backend
 
-The [backend](./backend/README.md) directory contains a partially completed Flask and SQLAlchemy server. You will work primarily in `__init__.py` to define your endpoints and can reference models.py for DB and SQLAlchemy setup. These are the files you'd want to edit in the backend:
-
-1. `backend/flaskr/__init__.py`
-2. `backend/test_flaskr.py`
-
-> View the [Backend README](./backend/README.md) for more details.
-
 Navigate to backend directory and run `pip install -r requirements.txt` in the terminal. All required packages are included in the requirements file.
 
 To start the server and run the application, run the following commands in the terminal: 
@@ -36,7 +29,6 @@ This starts the server, puts the app in development mode and directs the app to 
 
 The application is run on `http://127.0.0.1:5000/` by default which is a proxy in the frontend configuration. 
 
-#### Frontend
 #### Frontend
 
 From the frontend folder, run the following commands in the terminal: 
